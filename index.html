@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Pet</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Settings button -->
+  <button id="settings-btn" class="settings-btn">⚙️</button>
+
+  <!-- Pet display -->
+  <div id="pet-container" class="pet-container">
+    <div class="pet-display">
+      <div id="pet-emoji" class="pet-emoji">🐱</div>
+      <div id="pet-accessory" class="pet-accessory">☀️</div>
+    </div>
+    
+    <!-- Speech bubble -->
+    <div id="speech-bubble" class="speech-bubble">
+      <div id="bubble-text" class="bubble-text">Loading...</div>
+    </div>
+  </div>
+
+  <!-- Settings modal -->
+  <div id="settings-modal" class="modal">
+    <div class="modal-content">
+      <h2>Pet Settings</h2>
+      
+      <label for="pet-select">Choose your pet:</label>
+      <select id="pet-select">
+        <option value="guinea-pig">Guinea Pig 🐹</option>
+        <option value="cat">Cat 🐱</option>
+        <option value="dog">Dog 🐶</option>
+        <option value="bird">Bird 🐦</option>
+        <option value="rabbit">Rabbit 🐰</option>
+        <option value="turtle">Turtle 🐢</option>
+        <option value="fish">Fish 🐠</option>
+      </select>
+
+      <label for="location-input">Location (city name):</label>
+      <input type="text" id="location-input" placeholder="e.g., London">
+
+      <label for="api-key-input">OpenWeather API Key:</label>
+      <input type="text" id="api-key-input" placeholder="Get free key at openweathermap.org">
+      
+      <div class="modal-buttons">
+        <button id="save-settings" class="btn-primary">Save</button>
+        <button id="cancel-settings" class="btn-secondary">Cancel</button>
+      </div>
+
+      <p class="help-text">
+        Get a free API key at <a href="https://openweathermap.org/api" target="_blank">openweathermap.org</a>
+      </p>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

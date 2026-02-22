@@ -39,29 +39,11 @@ export default function SettingsWindow({ onSave }: SettingsWindowProps) {
   return (
     <div className="settings-window">
       <div className="settings-header">
-        <h1>⚙️ Weather Cat Settings</h1>
+        <h1>⚙️ WeatherPet Settings</h1>
         <button className="close-btn" onClick={handleClose}>✕</button>
       </div>
 
       <div className="settings-content">
-        <div className="setting-group">
-          <label htmlFor="api-key">OpenWeatherMap API Key</label>
-          <input
-            id="api-key"
-            type="text"
-            value={settings.apiKey}
-            onChange={(e) => setSettings({ ...settings, apiKey: e.target.value })}
-            placeholder="Enter your API key"
-            className="pixel-input"
-          />
-          <div className="hint">
-            Get your free API key at{' '}
-            <a href="https://openweathermap.org/api" target="_blank" rel="noopener noreferrer">
-              openweathermap.org
-            </a>
-          </div>
-        </div>
-
         <div className="setting-group">
           <label htmlFor="location">Location</label>
           <input
@@ -128,7 +110,7 @@ export default function SettingsWindow({ onSave }: SettingsWindowProps) {
         <button 
           className={`save-btn ${saved ? 'saved' : ''}`}
           onClick={handleSave}
-          disabled={!settings.location || !settings.apiKey}
+          disabled={!settings.location}
         >
           {saved ? '✓ Saved!' : 'Save Settings'}
         </button>

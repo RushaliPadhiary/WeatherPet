@@ -4,7 +4,6 @@ const STORAGE_KEY = 'weather-cat-settings';
 
 export const defaultSettings: Settings = {
   location: '',
-  apiKey: '',
   alwaysOnTop: false,
   temperatureUnit: 'C',
   updateInterval: 30, // 30 minutes

@@ -1,31 +1,51 @@
 import { WeatherCondition, WeatherData } from '../types';
 
-const OPENWEATHER_BASE_URL = 'https://api.openweathermap.org/data/2.5/weather';
+const GEOCODING_URL = 'https://geocoding-api.open-meteo.com/v1/search';
+const WEATHER_URL = 'https://api.open-meteo.com/v1/forecast';
 
 export async function fetchWeather(
   location: string,
-  apiKey: string,
   unit: 'C' | 'F' = 'C'
 ): Promise<WeatherData> {
-  const units = unit === 'C' ? 'metric' : 'imperial';
-  
   try {
-    const response = await fetch(
-      `${OPENWEATHER_BASE_URL}?q=${encodeURIComponent(location)}&appid=${apiKey}&units=${units}`
+    // First, geocode the location
+    const geoResponse = await fetch(
+      `${GEOCODING_URL}?name=${encodeURIComponent(location)}&count=1&language=en&format=json`
     );
 
-    if (!response.ok) {
-      throw new Error(`Weather API error: ${response.statusText}`);
+    if (!geoResponse.ok) {
+      throw new Error(`Geocoding error: ${geoResponse.statusText}`);
     }
 
-    const data = await response.json();
+    const geoData = await geoResponse.json();
+    
+    if (!geoData.results || geoData.results.length === 0) {
+      throw new Error('Location not found');
+    }
+
+    const { latitude, longitude, name, country } = geoData.results[0];
+
+    // Then fetch weather data
+    const tempUnit = unit === 'C' ? 'celsius' : 'fahrenheit';
+    const weatherResponse = await fetch(
+      `${WEATHER_URL}?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&temperature_unit=${tempUnit}`
+    );
+
+    if (!weatherResponse.ok) {
+      throw new Error(`Weather API error: ${weatherResponse.statusText}`);
+    }
+
+    const weatherData = await weatherResponse.json();
+    const current = weatherData.current;
+    
+    const condition = mapWeatherCode(current.weather_code);
     
     return {
-      condition: mapWeatherCondition(data.weather[0].main, data.weather[0].id),
-      temperature: Math.round(data.main.temp),
+      condition,
+      temperature: Math.round(current.temperature_2m),
       temperatureUnit: unit,
-      note: generateWeatherNote(data.weather[0].main, data.main.temp),
-      location: data.name,
+      note: generateWeatherNote(condition),
+      location: country ? `${name}, ${country}` : name,
     };
   } catch (error) {
     console.error('Failed to fetch weather:', error);
@@ -33,56 +53,57 @@ export async function fetchWeather(
   }
 }
 
-function mapWeatherCondition(_main: string, id: number): WeatherCondition {
-  // OpenWeatherMap condition IDs: https://openweathermap.org/weather-conditions
-  if (id >= 200 && id < 300) return 'stormy'; // Thunderstorm
-  if (id >= 300 && id < 600) return 'rainy'; // Drizzle & Rain
-  if (id >= 600 && id < 700) return 'snowy'; // Snow
-  if (id >= 700 && id < 800) return 'foggy'; // Atmosphere (fog, mist, etc)
-  if (id === 800) return 'sunny'; // Clear
-  if (id === 801) return 'partly-cloudy'; // Few clouds
-  if (id > 801) return 'cloudy'; // Clouds
+function mapWeatherCode(code: number): WeatherCondition {
+  // Open-Meteo WMO Weather codes: https://open-meteo.com/en/docs
+  if (code === 0) return 'sunny'; // Clear sky
+  if (code === 1) return 'sunny'; // Mainly clear
+  if (code === 2) return 'partly-cloudy'; // Partly cloudy
+  if (code === 3) return 'cloudy'; // Overcast
+  if (code >= 45 && code <= 48) return 'foggy'; // Fog
+  if (code >= 51 && code <= 67) return 'rainy'; // Drizzle/Rain
+  if (code >= 71 && code <= 77) return 'snowy'; // Snow
+  if (code >= 80 && code <= 82) return 'rainy'; // Rain showers
+  if (code >= 85 && code <= 86) return 'snowy'; // Snow showers
+  if (code >= 95 && code <= 99) return 'stormy'; // Thunderstorm
   
   return 'sunny'; // Default
 }
 
-function generateWeatherNote(condition: string, _temp: number): string {
-  const notes: Record<string, string[]> = {
-    Clear: [
+function generateWeatherNote(condition: WeatherCondition): string {
+  const notes: Record<WeatherCondition, string[]> = {
+    sunny: [
       "Perfect day for adventures! ☀️",
       "Sunshine vibes! 🌞",
       "Time to go outside! ✨",
     ],
-    Clouds: [
+    'partly-cloudy': [
+      "Nice weather today! 🌤️",
+      "Partly sunny! 🌥️",
+      "Great day ahead! ☁️✨",
+    ],
+    cloudy: [
       "Cozy cloudy day! ☁️",
       "Nice and mild! 🌥️",
       "Perfect weather! 💭",
     ],
-    Rain: [
+    rainy: [
       "Stay dry out there! ☔",
       "Cozy indoor weather! 🌧️",
       "Umbrella time! 💧",
     ],
-    Drizzle: [
-      "Light drizzle today! 🌦️",
-      "Gentle rain vibes! 💦",
-    ],
-    Thunderstorm: [
+    stormy: [
       "Stay safe inside! ⚡",
       "Stormy weather! 🌩️",
       "Dramatic skies! ⛈️",
     ],
-    Snow: [
+    snowy: [
       "Snowy wonderland! ❄️",
       "Bundle up! ⛄",
       "Winter magic! 🌨️",
     ],
-    Mist: [
+    foggy: [
       "Mystical vibes! 🌫️",
       "Foggy morning! 🌁",
-    ],
-    Fog: [
-      "Misty day ahead! 🌁",
       "Mysterious weather! 🌫️",
     ],
   };

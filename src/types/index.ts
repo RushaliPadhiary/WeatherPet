@@ -17,7 +17,6 @@ export interface WeatherData {
 
 export interface Settings {
   location: string;
-  apiKey: string;
   alwaysOnTop: boolean;
   temperatureUnit: 'C' | 'F';
   updateInterval: number; // in minutes

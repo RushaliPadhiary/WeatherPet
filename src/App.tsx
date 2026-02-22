@@ -37,8 +37,8 @@ function App() {
   const updateWeather = async () => {
     const settings = loadSettings();
     
-    if (!settings.location || !settings.apiKey) {
-      console.log('No location or API key configured');
+    if (!settings.location) {
+      console.log('No location configured');
       return;
     }
 
@@ -46,7 +46,6 @@ function App() {
     try {
       const data = await fetchWeather(
         settings.location,
-        settings.apiKey,
         settings.temperatureUnit
       );
       setWeatherData(data);
